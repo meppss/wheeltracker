@@ -99,6 +99,14 @@ class CreditSpread(models.Model):
         blank=True,
         help_text="Any notes or comments about the spread"
     )
+    entry_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text="The stock price when you entered the spread"
+    )
 
     # Current pricing (for open positions)
     current_long_price = models.DecimalField(
@@ -150,6 +158,12 @@ class CreditSpread(models.Model):
         if self.close_date:
             return 0
         days = (self.expiration - datetime.now().date()).days
+        return max(0, days)
+
+    @property
+    def days_open_to_expiration(self):
+        """Calculate the number of days from open_date to expiration (original DTE)"""
+        days = (self.expiration - self.open_date).days
         return max(0, days)
 
     @property
